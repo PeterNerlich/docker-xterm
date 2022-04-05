@@ -103,6 +103,7 @@ io_connect_path = "{0}socket.io".format(url_prefix)
 app = Flask(__name__, static_folder=".", static_url_path=static_url_path)
 app.config["SECRET_KEY"] = xterm_secret
 app.config["sessions"] = dict()
+app.config["cmd"] = ["bash", "-l"]  # default, overwritten in main()
 socketio = SocketIO(app, path=socketio_path)
 
 
@@ -372,7 +373,7 @@ def get_parser():
 
     arguments = {
         "--cmd-args": {
-            "default": "",
+            "default": "-l",
             "dest": "cmd_args",
             "metavar": "SENZING_COMMAND_ARGS",
             "help": "Command line arguments. Default: None"

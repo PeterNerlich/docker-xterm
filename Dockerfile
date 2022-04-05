@@ -45,8 +45,7 @@ RUN apt-get update \
       make \
       pkg-config \
       unzip \
-      wget \
-      && rm -rf /var/lib/apt/lists/*
+      wget
 
 # Work around until Debian repos catch up to modern versions of fio.
 
@@ -84,9 +83,17 @@ HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
 USER root
 
+# Re-enable man pages
+
+RUN sed -i '/path-exclude \/usr\/share\/man/d' /etc/dpkg/dpkg.cfg.d/docker \
+ && sed -i '/path-exclude \/usr\/share\/groff/d' /etc/dpkg/dpkg.cfg.d/docker
+
 # Install packages via apt.
 
 RUN apt-get update \
+ && apt-get install --reinstall \
+      bash \
+      coreutils \
  && apt-get -y install \
       curl \
       elvis-tiny \
@@ -96,6 +103,9 @@ RUN apt-get update \
       less \
       libpq-dev \
       libssl1.1 \
+      manpages \
+      man-db \
+      nano \
       net-tools \
       odbcinst \
       openssh-server \
@@ -110,8 +120,7 @@ RUN apt-get update \
       unzip \
       wget \
       zip \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+ && apt-get clean
 
 # Install packages via pip.
 
@@ -136,13 +145,21 @@ COPY --from=builder "/app/node_modules/xterm/css/xterm.css"                    "
 COPY --from=builder "/app/node_modules/xterm/lib/*"                            "/app/static/js/"
 COPY --from=builder "/usr/local/bin/fio"                                       "/usr/local/bin/fio"
 
+# Add test user
+
+RUN useradd -m test-user \
+ && echo "cd ~" > /home/test-user/.bash_login \
+ && mkdir -p \
+     /home/test-user/bin \
+     /home/test-user/.local/bin
+
 # The port for the Flask is 5000.
 
 EXPOSE 5000
 
 # Make non-root container.
 
-USER 1001
+USER test-user
 
 # Runtime environment variables.
 
