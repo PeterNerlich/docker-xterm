@@ -177,4 +177,4 @@ ENV TERM=xterm
 # Runtime execution.
 
 WORKDIR /
-CMD ["/app/xterm.py"]
+CMD gunicorn --bind 0.0.0.0:${PORT:-5000} --worker-class eventlet -w 1 app.app:app
